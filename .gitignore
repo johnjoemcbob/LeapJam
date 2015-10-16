@@ -19,3 +19,10 @@
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+
+# Ignore base Leap Motion content
+Assets/LeapMotion
+Assets/LeapMotionVR
+Assets/OVR
+Assets/Plugins
+ProjectSettings
