@@ -16,6 +16,12 @@ public class TargetBulletScript : MonoBehaviour
 				// Check for win
 				other.transform.parent.parent.GetComponentInChildren<TargetPracticeMiniGameScript>().CheckTargetWin( other.gameObject );
 			}
+			// Check for it having a rigidbody
+			Rigidbody body = other.GetComponent<Rigidbody>();
+			if ( body )
+			{
+				body.AddExplosionForce( 10000, transform.position, 100 );
+			}
 
 			// Remove this bullet
 			Destroy( gameObject );

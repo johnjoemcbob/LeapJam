@@ -28,15 +28,15 @@ public class PlayButtonScript : ButtonToggleBase
 			float time = PressDelay - Time.time;
 			if ( ( Mathf.Ceil( time * 10 ) % 9 ) == 0 )
 			{
-				ButtonText.text = ".";
+				ButtonText.text = "Cancel?\n.";
 			}
 			else if ( ( Mathf.Ceil( time * 10 ) % 6 ) == 0 )
 			{
-				ButtonText.text = "..";
+				ButtonText.text = "Cancel?\n..";
 			}
 			else if ( ( Mathf.Ceil( time * 10 ) % 3 ) == 0 )
 			{
-				ButtonText.text = "...";
+				ButtonText.text = "Cancel?\n...";
 			}
 			// Start the game when the delay ends
 			if ( PressDelay <= Time.time )
@@ -48,8 +48,8 @@ public class PlayButtonScript : ButtonToggleBase
 
 	public override void ButtonTurnsOn()
 	{
-		PressDelay = Time.time + 2;
-		ButtonText.text = "...";
+		PressDelay = Time.time + 1;
+		ButtonText.text = "Cancel?\n...";
 	}
 
 	public override void ButtonTurnsOff()

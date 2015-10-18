@@ -4,6 +4,7 @@ using System.Collections;
 
 public class BaseMiniGameScript : MonoBehaviour
 {
+	[Header( "Base" )]
 	// Reference to the main game logic
 	public MainLogicScript MainLogic;
 	// Reference to the Leap Motion Controller object
@@ -62,7 +63,7 @@ public class BaseMiniGameScript : MonoBehaviour
 
 	protected void SetBasicInstructions( string text, float time )
 	{
-		MainLogic.Text_Instruction.text = string.Format( text, time ).ToUpper();
+		MainLogic.Text_Instruction.text = text.ToUpper(); //string.Format( text, time ).ToUpper();
 	}
 
 	protected bool CheckGameEnd()

@@ -4,6 +4,7 @@ using Leap;
 
 public class TargetPracticeMiniGameScript : BaseMiniGameScript
 {
+	[Header( "Target Practice" )]
 	// The target objects
 	public GameObject[] Targets;
 	// The bullet prefab to fire
@@ -13,7 +14,11 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	// The time between gesture recog and first bullet fire
 	public float BulletFirstTime = 0.5f;
 	// The time between bullet fires
-	public float BulletReloadTime = 1;
+	public float BulletReloadTime = 0.5f;
+	// Audio clip references for firing and reloading
+	[Header( "Audio" )]
+	public AudioClip Audio_Fire;
+	public AudioClip Audio_Reload;
 
 	// The gesture progression of each hand as a gun
 	private int[] GestureProgression = new int[] { -1, -1 };
@@ -23,10 +28,13 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	private float[] NextFireTime = new float[] { 0, 0 };
 	// The last tracked hand normal of each hand
 	private Vector[] HandNormal = new Vector[2];
+	// The time at which to play the reload sound effect (0 is don't play)
+	private float[] AudioReloadTime = new float[] { 0, 0 };
 
 	void Start()
 	{
-		SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
+		SetBasicInstructions( Instructions, MaxPreGameTime );
+		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 
 		// Initialize the TargetHit array to be the size of the Targets objects information array
 		TargetHit = new bool[Targets.Length];
@@ -38,7 +46,9 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 
 	protected override void Update_PreGame()
 	{
-		SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
+		MainLogic.SetBackgroundAlpha( 1 - ( GameTime / MaxPreGameTime ) );
+		SetBasicInstructions( Instructions, MaxPreGameTime );
+		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 
 		// Start the game
 		if ( GameTime / MaxPreGameTime >= 1 )
@@ -50,8 +60,10 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 
 	protected override void Update_Game()
 	{
+		MainLogic.SetBackgroundAlpha( 0 );
 		int time = (int) Mathf.Ceil( ( MaxGameTime - GameTime ) * 5 );
-		SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
+		SetBasicInstructions( Instructions, time );
+		//SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
 
 		// Check the normal game end conditions (timer)
 		if ( CheckGameEnd() )
@@ -60,6 +72,17 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 			GameWon = false;
 			MainLogic.RunWinLose( GameWon );
 			return;
+		}
+
+		// Play the reload sound effect when flagged
+		for ( int hand = 0; hand < 2; hand++ )
+		{
+			if ( ( AudioReloadTime[hand] != 0 ) && ( AudioReloadTime[hand] <= Time.time ) )
+			{
+				// Play reload sound effect
+				GetComponent<AudioSource>().PlayOneShot( Audio_Reload );
+				AudioReloadTime[hand] = 0;
+			}
 		}
 
 		// Check for targets being fired at
@@ -100,6 +123,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				{
 					GestureProgression[currenthand] = 1;
 					NextFireTime[currenthand] = Time.time + BulletReloadTime;
+					AudioReloadTime[currenthand] = Time.time + 0.5f;
 				}
 			}
 
@@ -138,7 +162,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				bullet.transform.parent = transform;
 				bullet.GetComponent<Rigidbody>().AddForce( fingertip.forward * BulletSpeed );
 				// Play sound effect
-				GetComponent<AudioSource>().Play();
+				GetComponent<AudioSource>().PlayOneShot( Audio_Fire );
 
 				// Flag as not firing again
 				GestureProgression[currenthand] = 0;
@@ -153,7 +177,9 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 
 	protected override void Update_PostGame()
 	{
-		SetBasicInstructions( WinMessage, 0 );
+		MainLogic.SetBackgroundAlpha( GameTime / MaxPostGameTime );
+		SetBasicInstructions( WinMessage, MaxPreGameTime );
+		//SetBasicInstructions( WinMessage, 0 );
 
 		if ( GameTime >= MaxPostGameTime )
 		{
@@ -171,6 +197,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				if ( target == targetdestroyed )
 				{
 					TargetHit[targetid] = true;
+					targetdestroyed.GetComponent<TargetMoveScript>().SetAnimationState( 2 );
 					break;
 				}
 				targetid++;

@@ -4,6 +4,7 @@ using Leap;
 
 public class ScreamMiniGameScript : BaseMiniGameScript
 {
+	[Header( "Scream" )]
 	// The left hand requried position
 	public Transform Hand_Left;
 	// The right hand requried position
@@ -11,12 +12,15 @@ public class ScreamMiniGameScript : BaseMiniGameScript
 
 	void Start()
 	{
-		SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
+		SetBasicInstructions( Instructions, 0 );
+		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 	}
 
 	protected override void Update_PreGame()
 	{
-		SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
+		MainLogic.SetBackgroundAlpha( 1 - ( GameTime / MaxPreGameTime ) );
+		SetBasicInstructions( Instructions, 0 );
+		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 
 		// Start the game
 		if ( GameTime / MaxPreGameTime >= 1 )
@@ -28,8 +32,10 @@ public class ScreamMiniGameScript : BaseMiniGameScript
 
 	protected override void Update_Game()
 	{
+		MainLogic.SetBackgroundAlpha( 0 );
 		int time = (int) Mathf.Ceil( ( MaxGameTime - GameTime ) * 5 );
-		SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
+		SetBasicInstructions( Instructions, 0 );
+		//SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
 
 		// Check the normal game end conditions (timer)
 		if ( CheckGameEnd() )
@@ -90,7 +96,9 @@ public class ScreamMiniGameScript : BaseMiniGameScript
 
 	protected override void Update_PostGame()
 	{
+		MainLogic.SetBackgroundAlpha( GameTime / MaxPostGameTime );
 		SetBasicInstructions( WinMessage, 0 );
+		//SetBasicInstructions( WinMessage, 0 );
 
 		if ( GameTime >= MaxPostGameTime )
 		{

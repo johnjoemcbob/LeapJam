@@ -5,18 +5,25 @@ using System.Collections;
 
 public class MainLogicScript : MonoBehaviour
 {
+	[Header( "Main" )]
 	// Array of possible minigames
 	public GameObject[] MiniGames;
 	// Parents for different types of objects in the scene
 	public GameObject DefaultScene;
 	public GameObject CurrentGame;
+	public GameObject MainCamera;
 	// Reference to the Leap Motion Controller object
 	public HandController LeapController;
 	// UI References
 	[Header( "UI" )]
 	public GameObject Menu;
+	public Image Image_Background_Fade;
 	public Text Text_Instruction;
 	public Text Text_Score;
+	// Audio Clip References
+	[Header( "Audio" )]
+	public AudioClip[] Audio_Win;
+	public AudioClip[] Audio_Lose;
 
 	// The id in the MiniGames array of the currently playing minigame
 	private int CurrentGameID = -1;
@@ -45,6 +52,13 @@ public class MainLogicScript : MonoBehaviour
 		ChooseGame();
 	}
 
+	// Called from any of the states in order to affect the alpha transparency of the background
+	public void SetBackgroundAlpha( float alpha )
+	{
+		Image_Background_Fade.color = new Color( 0, 0, 0, alpha );
+		MainCamera.transform.localPosition = new Vector3( 0, 0, 1 - alpha - 1 );
+	}
+
 	// Callback from the minigame script to run win/lose logic
 	public void RunWinLose( bool win )
 	{
@@ -54,6 +68,10 @@ public class MainLogicScript : MonoBehaviour
 			// Add to total score
 			Score += CurrentGameLogic.Score;
 			Text_Score.text = Score.ToString();
+			// Play cheer/clap effect
+			GetComponent<AudioSource>().clip = Audio_Win[UnityEngine.Random.Range( 0, Audio_Win.Length )];
+			GetComponent<AudioSource>().Play();
+
 			// If the player did win and this is a more difficult game, then store as the hardest completed
 			MaxGameID = Mathf.Max( CurrentGameID, MaxGameID );
 		}
@@ -61,6 +79,7 @@ public class MainLogicScript : MonoBehaviour
 		else
 		{
 			// Play boo/trombone effect
+			GetComponent<AudioSource>().clip = Audio_Lose[UnityEngine.Random.Range( 0, Audio_Lose.Length )];
 			GetComponent<AudioSource>().Play();
 		}
 	}

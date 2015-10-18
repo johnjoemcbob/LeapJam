@@ -10,28 +10,73 @@ public class TargetMoveScript : MonoBehaviour
 	public int Direction = 1;
 	// The speed to lerp between the min/max positions
 	public float Speed = 1;
+	// The minimum height to start the target at
+	public float MinY = -2.5f;
 
 	// The current lerp time value
 	private float LerpTime = 0;
+	// The state of animation; in0, loop1, out2
+	private int AnimationState = 0;
+	// The scene Y of the target when the minigame starts
+	private float NormalY = 0;
+
+	void Start()
+	{
+		NormalY = transform.position.y;
+	}
 
 	void Update()
 	{
-		// Increment the lerp time by frame time
-		LerpTime += Time.deltaTime * Speed;
-		// Move the target
-		if ( Direction > 0 )
+		if ( ( AnimationState == 0 ) || ( AnimationState == 1 ) )
 		{
-			transform.position = Vector3.Lerp( MinimumTarget.position, MaximumTarget.position, LerpTime );
+			if ( AnimationState == 1 )
+			{
+				// Increment the lerp time by frame time
+				LerpTime += Time.deltaTime * Speed;
+			}
+
+			// Move the target
+			if ( Direction > 0 )
+			{
+				transform.position = Vector3.Lerp( MinimumTarget.position, MaximumTarget.position, LerpTime );
+			}
+			else if ( Direction < 0 )
+			{
+				transform.position = Vector3.Lerp( MaximumTarget.position, MinimumTarget.position, LerpTime );
+			}
 		}
-		else if ( Direction < 0 )
+		if ( AnimationState == 0 )
 		{
-			transform.position = Vector3.Lerp( MaximumTarget.position, MinimumTarget.position, LerpTime );
+			// Increment the lerp time by frame time
+			LerpTime += Time.deltaTime * 1;
+
+			float distance = NormalY - MinY;
+			transform.position = new Vector3( transform.position.x, MinY + ( distance * LerpTime ), transform.position.z );
+		}
+		if ( AnimationState == 2 )
+		{
+			// Increment the lerp time by frame time
+			LerpTime += Time.deltaTime * 1;
+
+			float distance = NormalY - MinY;
+			transform.position = new Vector3( transform.position.x, MinY - ( distance * LerpTime ) + distance, transform.position.z );
 		}
 		// Reverse the direction when the min/max is reached
 		if ( LerpTime >= 1 )
 		{
 			LerpTime = 0;
 			Direction *= -1;
+
+			// Move from in to loop
+			if ( AnimationState == 0 )
+			{
+				AnimationState = 1;
+			}
 		}
+	}
+
+	public void SetAnimationState( int state )
+	{
+		AnimationState = state;
 	}
 }
