@@ -33,7 +33,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 
 	void Start()
 	{
-		SetBasicInstructions( Instructions, MaxPreGameTime );
+		SetBasicInstructions( Instructions, 0 );
 		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 
 		// Initialize the TargetHit array to be the size of the Targets objects information array
@@ -47,7 +47,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	protected override void Update_PreGame()
 	{
 		MainLogic.SetBackgroundAlpha( 1 - ( GameTime / MaxPreGameTime ) );
-		SetBasicInstructions( Instructions, MaxPreGameTime );
+		SetBasicInstructions( Instructions, 0 );
 		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 
 		// Start the game
@@ -62,7 +62,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	{
 		MainLogic.SetBackgroundAlpha( 0 );
 		int time = (int) Mathf.Ceil( ( MaxGameTime - GameTime ) * 5 );
-		SetBasicInstructions( Instructions, time );
+		SetBasicInstructions( Instructions, 1 - ( GameTime / MaxGameTime ) );
 		//SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
 
 		// Check the normal game end conditions (timer)
@@ -178,8 +178,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	protected override void Update_PostGame()
 	{
 		MainLogic.SetBackgroundAlpha( GameTime / MaxPostGameTime );
-		SetBasicInstructions( WinMessage, MaxPreGameTime );
-		//SetBasicInstructions( WinMessage, 0 );
+		SetBasicInstructions( WinMessage, 0 );
 
 		if ( GameTime >= MaxPostGameTime )
 		{

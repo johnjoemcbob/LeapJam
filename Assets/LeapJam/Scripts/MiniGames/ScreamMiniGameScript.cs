@@ -34,7 +34,7 @@ public class ScreamMiniGameScript : BaseMiniGameScript
 	{
 		MainLogic.SetBackgroundAlpha( 0 );
 		int time = (int) Mathf.Ceil( ( MaxGameTime - GameTime ) * 5 );
-		SetBasicInstructions( Instructions, 0 );
+		SetBasicInstructions( Instructions, 1 - ( GameTime / MaxGameTime ) );
 		//SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
 
 		// Check the normal game end conditions (timer)

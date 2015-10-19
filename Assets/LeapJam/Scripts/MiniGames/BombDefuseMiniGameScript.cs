@@ -44,7 +44,7 @@ public class BombDefuseMiniGameScript : BaseMiniGameScript
 	{
 		MainLogic.SetBackgroundAlpha( 0 );
 		int time = (int) Mathf.Ceil( ( MaxGameTime - GameTime ) * 5 );
-		SetBasicInstructions( string.Format( Instructions, WireName[WireToCut] ), 0 );
+		SetBasicInstructions( string.Format( Instructions, WireName[WireToCut] ), 1 - ( GameTime / MaxGameTime ) );
 		//SetBasicInstructions( string.Format( Instructions, WireName[WireToCut] ) + "\n" + Instructions2 + "{0}", time );
 
 		// Check the normal game end conditions (timer)

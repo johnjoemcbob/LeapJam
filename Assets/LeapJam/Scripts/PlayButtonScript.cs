@@ -41,6 +41,8 @@ public class PlayButtonScript : ButtonToggleBase
 			// Start the game when the delay ends
 			if ( PressDelay <= Time.time )
 			{
+				PressDelay = -1;
+				ButtonText.text = "PLAY";
 				MainLogic.StartPlay();
 			}
 		}

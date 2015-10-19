@@ -34,23 +34,33 @@ public class BalanceMiniGameScript : BaseMiniGameScript
 		{
 			GameStarted = true;
 			ResetGameTime();
-			// Begin physics
-			foreach ( GameObject balanceobject in BalanceObjects )
-			{
-				balanceobject.GetComponent<Rigidbody>().isKinematic = false;
-			}
-			// Start looping tone audio
-			Audio_AscendingTone.Play();
+			StartBalance();
 		}
+	}
+
+	protected void StartBalance()
+	{
+		// Begin physics
+		foreach ( GameObject balanceobject in BalanceObjects )
+		{
+			balanceobject.GetComponent<Rigidbody>().isKinematic = false;
+		}
+		// Start looping tone audio
+		Audio_AscendingTone.Play();
 	}
 
 	protected override void Update_Game()
 	{
 		MainLogic.SetBackgroundAlpha( 0 );
 		int time = (int) Mathf.Ceil( ( MaxGameTime - GameTime ) * 5 );
-		SetBasicInstructions( Instructions, 0 );
+		SetBasicInstructions( Instructions, 1 - ( GameTime / MaxGameTime ) );
 		//SetBasicInstructions( Instructions + "\n" + Instructions2 + "{0}", time );
 
+		Update_Game_Balance();
+	}
+
+	protected void Update_Game_Balance()
+	{
 		// Set the pitch of the ascending tone based on time left of the round
 		Audio_AscendingTone.pitch = 0.5f + ( 1 - ( 1 / MaxGameTime * ( MaxGameTime - GameTime ) ) );
 
@@ -96,18 +106,22 @@ public class BalanceMiniGameScript : BaseMiniGameScript
 	{
 		MainLogic.SetBackgroundAlpha( GameTime / MaxPostGameTime );
 		SetBasicInstructions( WinMessage, 0 );
-		//SetBasicInstructions( WinMessage, 0 );
 
+		Update_PostGame_Balance();
+
+		if ( GameTime >= MaxPostGameTime )
+		{
+			MainLogic.EndCurrentGame();
+		}
+	}
+
+	protected void Update_PostGame_Balance()
+	{
 		// Ensure the looping ascending tone has been stopped
 		if ( Audio_AscendingTone.isPlaying )
 		{
 			Audio_AscendingTone.Stop();
 			Audio_OrchestraHit.Play();
-		}
-
-		if ( GameTime >= MaxPostGameTime )
-		{
-			MainLogic.EndCurrentGame();
 		}
 	}
 }

@@ -64,6 +64,7 @@ public class BaseMiniGameScript : MonoBehaviour
 	protected void SetBasicInstructions( string text, float time )
 	{
 		MainLogic.Text_Instruction.text = text.ToUpper(); //string.Format( text, time ).ToUpper();
+		MainLogic.SetTime( time );
 	}
 
 	protected bool CheckGameEnd()
