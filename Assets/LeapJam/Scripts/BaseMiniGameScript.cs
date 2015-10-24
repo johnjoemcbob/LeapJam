@@ -37,6 +37,11 @@ public class BaseMiniGameScript : MonoBehaviour
 		// Actual game end logic is checked within individual minigames,
 		// to allow for some to work around the time limit if need be
 		GameTime += Time.deltaTime;
+		// In multiplayer the start timer needs to be longer to allow for player repositioning
+		if ( ( !GameStarted ) && ( MainLogic.GetMaxPlayers() > 1 ) )
+		{
+			GameTime -= Time.deltaTime / 2;
+		}
 
 		if ( GameEnded )
 		{

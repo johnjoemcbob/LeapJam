@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using LMWidgets;
 
-public class PlayButtonScript : ButtonToggleBase
+public class ResetButtonScript : ButtonToggleBase
 {
 	// Reference to the main game logic script
 	public MainLogicScript MainLogic;
@@ -24,27 +24,11 @@ public class PlayButtonScript : ButtonToggleBase
 
 		if ( PressDelay != -1 )
 		{
-			// While delaying, animate the text a little
-			float time = PressDelay - Time.time;
-			if ( ( Mathf.Ceil( time * 10 ) % 9 ) == 0 )
-			{
-				ButtonText.text = "Cancel?\n.";
-			}
-			else if ( ( Mathf.Ceil( time * 10 ) % 6 ) == 0 )
-			{
-				ButtonText.text = "Cancel?\n..";
-			}
-			else if ( ( Mathf.Ceil( time * 10 ) % 3 ) == 0 )
-			{
-				ButtonText.text = "Cancel?\n...";
-			}
-			// Start the game when the delay ends
+			// Reset the resetbutton text
 			if ( PressDelay <= Time.time )
 			{
 				PressDelay = -1;
-				ButtonText.text = "PLAY";
-				MainLogic.StartPlay();
-				m_toggleState = false;
+				ButtonText.text = "RESET?";
 			}
 		}
 	}
@@ -52,12 +36,13 @@ public class PlayButtonScript : ButtonToggleBase
 	public override void ButtonTurnsOn()
 	{
 		PressDelay = Time.time + 1;
-		ButtonText.text = "Cancel?\n...";
+		ButtonText.text = "GAME\nRESET!";
+		MainLogic.Reset();
+		m_toggleState = false;
 	}
 
 	public override void ButtonTurnsOff()
 	{
-		PressDelay = -1;
-		ButtonText.text = "PLAY";
+		
 	}
 }

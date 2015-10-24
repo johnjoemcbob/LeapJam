@@ -177,8 +177,22 @@ public class MainLogicScript : MonoBehaviour
 	public void StartPlay()
 	{
 		Menu.SetActive( false );
+		SetPlayers( MaxPlayers );
 		//SetPlayers( 1 );
 		ChooseGame();
+	}
+
+	// Called from the ResetButtonScript on the main menu
+	public void Reset()
+	{
+		CurrentPlayer = -1;
+		CurrentGameID = -1;
+		LastGameID = -1;
+		MaxGameID = -1;
+		for ( int player = 0; player < 4; player++ )
+		{
+			Score[player] = 0;
+		}
 	}
 
 	// Called from the Update_CheckTimeout function
@@ -386,5 +400,10 @@ public class MainLogicScript : MonoBehaviour
 			score.gameObject.SetActive( true );
 			player++;
 		}
+	}
+
+	public int GetMaxPlayers()
+	{
+		return MaxPlayers;
 	}
 }
