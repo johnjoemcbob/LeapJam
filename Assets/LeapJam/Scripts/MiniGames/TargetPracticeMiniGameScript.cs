@@ -9,6 +9,8 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	public GameObject[] Targets;
 	// The bullet prefab to fire
 	public GameObject BulletPrefab;
+	// The firing particle effect prefab
+	public GameObject GunParticlePrefab;
 	// The speed for the bullet to travel at
 	public float BulletSpeed = 1000;
 	// The time between gesture recog and first bullet fire
@@ -20,8 +22,10 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 	public AudioClip Audio_Fire;
 	public AudioClip Audio_Reload;
 
-	// The gesture progression of each hand as a gun
+	// The gesture progression of each hand as a gun (hand recoil)
 	private int[] GestureProgression = new int[] { -1, -1 };
+	// The gesture progression of each hand as a gun (thumb hammer)
+	private int[] GestureProgressionThumb = new int[] { -1, -1 };
 	// Flag for each target being shot or not
 	private bool[] TargetHit;
 	// Time until the next bullet can be fired
@@ -109,6 +113,29 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 			{
 				GestureProgression[currenthand] = -1;
 			}
+			// Check that the thumb is extended like a hammer
+			Vector3 thumbtip = hand.fingers[0].bones[2].position;
+			Vector3 indextip = hand.fingers[1].bones[3].position;
+			float thumbdistance = Vector3.Distance( thumbtip, indextip );
+			if ( thumbdistance > 1 )
+			{
+				// The hand must also be gun shaped to proceed
+				if ( GestureProgression[currenthand] == 0 )
+				{
+					GestureProgressionThumb[currenthand] = 0;
+				}
+			}
+			else
+			{
+				if ( GestureProgressionThumb[currenthand] == 0 )
+				{
+					GestureProgressionThumb[currenthand] = 1;
+				}
+				else
+				{
+					GestureProgressionThumb[currenthand] = -1;
+				}
+			}
 
 			// Check for gun firing (hand recoil gesture) (GestureProgression=1)
 			if ( GestureProgression[currenthand] == 0 )
@@ -127,31 +154,9 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				}
 			}
 
-			// If the gun fired then raycast against targets
-			if ( GestureProgression[currenthand] == 1 )
+			// If the gun fired then fire the bullet prefab
+			if ( ( GestureProgression[currenthand] == 1 ) || ( GestureProgressionThumb[currenthand] == 1 ) )
 			{
-				// Individual ray for each target, cast from the index finger tip in the direction the hand is facing
-				//int currenttarget = 0;
-				//foreach ( GameObject target in Targets )
-				//{
-				//	Ray ray = new Ray();
-				//		ray.origin = hand.fingers[1].GetTipPosition();
-				//		ray.direction = hand.fingers[1].bones[hand.fingers[1].bones.Length - 1].forward;
-				//	Debug.DrawRay( ray.origin, ray.direction, Color.cyan, 10 );
-				//	RaycastHit hit;
-				//	if ( target.GetComponent<Collider>().Raycast( ray, out hit, 1000 ) )
-				//	{
-				//		TargetHit[currenttarget] = true;
-				//		CheckTargetWin();
-
-				//		// Blow up target
-				//		target.GetComponentInChildren<TargetExplodeScript>().Explode();
-
-				//		// Only hit one per shot
-				//		break;
-				//	}
-				//	currenttarget++;
-				//}
 				// Create the bullet prefab and fire it
 				Transform fingertip = hand.fingers[1].bones[hand.fingers[1].bones.Length - 2];
 				GameObject bullet = (GameObject) Instantiate(
@@ -163,9 +168,17 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				bullet.GetComponent<Rigidbody>().AddForce( fingertip.forward * BulletSpeed );
 				// Play sound effect
 				GetComponent<AudioSource>().PlayOneShot( Audio_Fire );
+				// Play the particle effect
+				GameObject particle = (GameObject) Instantiate(
+					GunParticlePrefab,
+					hand.fingers[1].GetTipPosition(),
+					Quaternion.Euler( fingertip.rotation.eulerAngles )
+				);
+				particle.transform.parent = transform;
 
 				// Flag as not firing again
-				GestureProgression[currenthand] = 0;
+				GestureProgression[currenthand] = -1;
+				GestureProgressionThumb[currenthand] = -1;
 			}
 
 			// Update last palm normal for this hand

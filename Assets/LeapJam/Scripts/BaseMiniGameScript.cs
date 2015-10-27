@@ -28,6 +28,10 @@ public class BaseMiniGameScript : MonoBehaviour
 	protected bool GameEnded = false;
 	// Flag for whether or not the minigame was won
 	protected bool GameWon = false;
+	// Flag while waiting for old player hands to be removed in multiplayer
+	protected bool NewGameHandsRemoved = false;
+	// Flag while waiting for new player hands to enter in multiplayer
+	protected bool NewGameWaitingHands = true;
 	// String to display when the minigame is won
 	protected string WinMessage = "";
 
@@ -37,15 +41,32 @@ public class BaseMiniGameScript : MonoBehaviour
 		// Actual game end logic is checked within individual minigames,
 		// to allow for some to work around the time limit if need be
 		GameTime += Time.deltaTime;
-		// In multiplayer the start timer needs to be longer to allow for player repositioning
-		if ( ( !GameStarted ) && ( MainLogic.GetMaxPlayers() > 1 ) )
+		// In multiplayer the start timer needs to pause to allow for player repositioning
+		if ( ( !GameStarted ) && ( MainLogic.GetMaxPlayers() > 1 ) && NewGameWaitingHands )
 		{
-			GameTime -= Time.deltaTime / 2;
+			GameTime -= Time.deltaTime;
+
+			// Check if the hands are present now, after being removed from the scene
+			int hands = LeapController.GetAllGraphicsHands().Length;
+			if ( hands == 0 )
+			{
+				NewGameHandsRemoved = true;
+			}
+			else if ( hands == 2 )
+			{
+				if ( NewGameHandsRemoved )
+				{
+					NewGameWaitingHands = false;
+				}
+			}
 		}
 
 		if ( GameEnded )
 		{
 			Update_PostGame();
+			// Flag hands as needing to be changed in the next game
+			NewGameHandsRemoved = false;
+			NewGameWaitingHands = true;
 		}
 		else if ( GameStarted )
 		{
@@ -89,5 +110,15 @@ public class BaseMiniGameScript : MonoBehaviour
 			return true;
 		}
 		return false;
+	}
+
+	public bool GetGameStarted()
+	{
+		return GameStarted;
+	}
+
+	public bool GetWaitingHands()
+	{
+		return NewGameWaitingHands;
 	}
 }

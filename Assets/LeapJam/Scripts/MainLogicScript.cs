@@ -159,18 +159,22 @@ public class MainLogicScript : MonoBehaviour
 	public void Update_CharacterText()
 	{
 		// Character text
-		CharacterTextFade += Time.deltaTime * CharacterTextFadeDirection;
-		if ( CharacterTextFade < 0 )
+		// Don't fade if waiting for hands to appear in hotseat multiplayer
+		if ( ( Menu.activeSelf ) || CurrentGameLogic.GetGameStarted() || ( GetMaxPlayers() == 1 ) || ( !CurrentGameLogic.GetWaitingHands() ) || ( CharacterTextFadeDirection == 1 ) )
 		{
-			CharacterTextFadeDirection = 0;
-			CharacterTextFade = 0;
+			CharacterTextFade += Time.deltaTime * CharacterTextFadeDirection;
+			if ( CharacterTextFade < 0 )
+			{
+				CharacterTextFadeDirection = 0;
+				CharacterTextFade = 0;
+			}
+			if ( CharacterTextFade > 1 )
+			{
+				CharacterTextFadeDirection = -1;
+				CharacterTextFade = 1;
+			}
+			Text_Character.color = new Color( 255, 255, 255, CharacterTextFade );
 		}
-		if ( CharacterTextFade > 1 )
-		{
-			CharacterTextFadeDirection = -1;
-			CharacterTextFade = 1;
-		}
-		Text_Character.color = new Color( 255, 255, 255, CharacterTextFade );
 	}
 
 	// Called from the PlayButtonScript on the main menu
@@ -205,7 +209,7 @@ public class MainLogicScript : MonoBehaviour
 		ExitGame( CurrentGameID );
 	}
 
-	// Called from any of the states in order to affect the progress of the time (0->1)
+	// Called from any of the minigames in order to affect the progress of the time image (0->1)
 	public void SetTime( float time )
 	{
 		Image_Time.fillAmount = time;
@@ -312,11 +316,12 @@ public class MainLogicScript : MonoBehaviour
 		int hand = CurrentPlayer * 2;
 		LeapController.GetComponent<HandController>().leftGraphicsModel = Hands[hand];
 		LeapController.GetComponent<HandController>().rightGraphicsModel = Hands[hand + 1];
+		// In multiplayer, display the next player's name
 		if ( MaxPlayers > 1 )
 		{
 			CharacterTextFade = 0;
 			CharacterTextFadeDirection = 1;
-			Text_Character.text = CharacterName[CurrentPlayer] + "\n" + character_linetwo;
+			Text_Character.text = CharacterName[CurrentPlayer] + "\n(PLACE BOTH HANDS IN THE SCENE)\n" + character_linetwo;
 		}
 
 		// Choose from a selection of minigames near the current level

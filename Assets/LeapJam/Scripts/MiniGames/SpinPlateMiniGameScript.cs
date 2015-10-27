@@ -31,6 +31,12 @@ public class SpinPlateMiniGameScript : BalanceMiniGameScript
 			ResetGameTime();
 			StartBalance();
 		}
+
+		// Give the spinning plates the initial rotational velocity
+		foreach ( GameObject spin in SpinObjects )
+		{
+			spin.GetComponent<Rigidbody>().AddTorque( new Vector3( 0, 1000000, 0 ) );
+		}
 	}
 
 	protected override void Update_Game()

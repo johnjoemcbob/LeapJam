@@ -5,6 +5,13 @@ public class PlayerCountSlider : SliderDemo
 {
 	public MainLogicScript MainLogic;
 
+	protected override void Start()
+	{
+		base.Start();
+
+		transform.localPosition = new Vector3( -2, transform.localPosition.y, transform.localPosition.z );
+	}
+
 	protected override void sliderReleased()
 	{
 		base.sliderReleased();
