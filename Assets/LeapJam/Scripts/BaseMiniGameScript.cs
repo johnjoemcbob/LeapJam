@@ -37,6 +37,13 @@ public class BaseMiniGameScript : MonoBehaviour
 
 	void Update()
 	{
+		// Must have a reference, or functionality will be unavailable
+		if ( !MainLogic )
+		{
+			Destroy( this );
+			return;
+		}
+
 		// Increment the amount of time this game has been active for
 		// Actual game end logic is checked within individual minigames,
 		// to allow for some to work around the time limit if need be
@@ -89,6 +96,8 @@ public class BaseMiniGameScript : MonoBehaviour
 
 	protected void SetBasicInstructions( string text, float time )
 	{
+		if ( !MainLogic ) return;
+
 		MainLogic.Text_Instruction.text = text.ToUpper(); //string.Format( text, time ).ToUpper();
 		MainLogic.SetTime( time );
 	}

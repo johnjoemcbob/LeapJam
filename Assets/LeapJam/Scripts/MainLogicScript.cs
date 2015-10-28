@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MainLogicScript : MonoBehaviour
 {
@@ -26,6 +28,7 @@ public class MainLogicScript : MonoBehaviour
 	[Header( "UI" )]
 	public GameObject Menu;
 	public GameObject Play;
+	public GameObject Win;
 	public Image Image_Background_Fade;
 	public Image Image_Time;
 	public Image Image_Timeout;
@@ -125,6 +128,7 @@ public class MainLogicScript : MonoBehaviour
 			CurrentTimeout = Mathf.Max( CurrentTimeout, 0 );
 			if ( CurrentTimeout == 0 )
 			{
+				Menu.SetActive( true );
 				EndPlay();
 			}
 		}
@@ -158,6 +162,8 @@ public class MainLogicScript : MonoBehaviour
 
 	public void Update_CharacterText()
 	{
+		if ( !CurrentGameLogic ) return;
+
 		// Character text
 		// Don't fade if waiting for hands to appear in hotseat multiplayer
 		if ( ( Menu.activeSelf ) || CurrentGameLogic.GetGameStarted() || ( GetMaxPlayers() == 1 ) || ( !CurrentGameLogic.GetWaitingHands() ) || ( CharacterTextFadeDirection == 1 ) )
@@ -197,12 +203,12 @@ public class MainLogicScript : MonoBehaviour
 		{
 			Score[player] = 0;
 		}
+		CurrentGameLogic = null;
 	}
 
 	// Called from the Update_CheckTimeout function
 	public void EndPlay()
 	{
-		Menu.SetActive( true );
 		SetPlayers( 0 );
 		SetBackgroundAlpha( 0 );
 		SetTime( 0 );
@@ -294,10 +300,17 @@ public class MainLogicScript : MonoBehaviour
 			{
 				MaxGameID++;
 
+				// Reset player attempts (hotseat multiplayer)
 				FinalAttempt = false;
 				for ( int player = 0; player < MaxPlayers; player++ )
 				{
 					CompletedGame[player] = false;
+				}
+
+				// Show win screen
+				if ( MaxGameID >= MiniGames.Length )
+				{
+					WinGame();
 				}
 			}
 		}
@@ -363,6 +376,7 @@ public class MainLogicScript : MonoBehaviour
 	private void ExitGame( int gameid )
 	{
 		// The specified minigame must be currently loaded
+		if ( !CurrentGame ) return;
 		if ( CurrentGameID != gameid ) return;
 
 		// Cleanup any children of the CurrentGame parent
@@ -381,6 +395,59 @@ public class MainLogicScript : MonoBehaviour
 		// Flag currently no minigame
 		LastGameID = CurrentGameID;
 		CurrentGameID = -1;
+	}
+
+	// Called from ChooseGame if all players have completed the final level
+	// Used to stop the play state and show the final scores
+	private void WinGame()
+	{
+		// Do something else if it was singleplayer
+		//if ( MaxPlayers == 1 ) return;
+
+		// Sort the scores to find the winner
+		Dictionary<int, int> scores = new Dictionary<int, int>();
+		for ( int player = 0; player < 4; player++ )
+		{
+			scores.Add( player, Score[player] );
+		}
+		var scores_sorted = from entry in scores orderby entry.Value descending select entry;
+
+		// Display the win state
+		Win.SetActive( true );
+
+		// Change the number of hands depending on the number of players (2-3)
+		for ( int player = 0; player < 4; player++ )
+		{
+			// Enable if the player was active during the game
+			Win.transform.GetChild( player ).gameObject.SetActive( player < MaxPlayers );
+		}
+
+		// Change the hand model of each pedestal
+		for ( int position = 0; position < 4; position++ )
+		{
+			// Win -> PedestalNum -> AnimationParent -> HandController
+			HandController controller = (HandController) Win.transform.GetChild( position ).GetChild( 0 ).GetChild( 0 ).GetComponent<HandController>();
+
+			int hand = scores_sorted.ElementAt( position ).Key * 2;
+			controller.leftGraphicsModel = Hands[hand];
+			controller.rightGraphicsModel = Hands[hand + 1];
+		}
+
+		// Change the score displayed on each pedestal
+		for ( int position = 0; position < 4; position++ )
+		{
+			// Win -> PedestalNum -> Child1(Canvas) -> Child0 (Score)
+			Text text = (Text) Win.transform.GetChild( position ).GetChild( 1 ).GetChild( 0 ).GetComponent<Text>();
+			text.text = scores_sorted.ElementAt( position ).Value.ToString();
+		}
+
+		// Change instructions to display the winner's name
+		Text_Instruction.text = CharacterName[scores_sorted.ElementAt( 0 ).Key] + " WON!";
+		Text_Character.color = new Color( 0, 0, 0, 0 );
+
+		// Stop the game state (last because it resets values)
+		EndPlay();
+		Reset();
 	}
 
 	// Set the number of players in the current game
