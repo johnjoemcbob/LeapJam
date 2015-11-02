@@ -33,6 +33,7 @@ public class MainLogicScript : MonoBehaviour
 	public Image Image_Background_Fade;
 	public Image Image_Time;
 	public Image Image_Timeout;
+	public RawImage Image_Instruction;
 	public Text Text_Instruction;
 	public Text Text_Character;
 	public Text[] Text_Score;
@@ -239,6 +240,7 @@ public class MainLogicScript : MonoBehaviour
 	public void SetBackgroundAlpha( float alpha )
 	{
 		Image_Background_Fade.color = new Color( 0, 0, 0, alpha );
+		Image_Instruction.color = new Color( 255, 255, 255, alpha );
 		MainCamera.transform.localPosition = new Vector3( 0, 0, 1 - alpha - 1 );
 	}
 

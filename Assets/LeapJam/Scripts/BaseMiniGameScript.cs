@@ -142,8 +142,7 @@ public class BaseMiniGameScript : MonoBehaviour
 	public void PlayInstruction()
 	{
 		if ( !InstructionRecording ) return;
-
-		InstructionLeapController.transform.position = new Vector3( 0, 0, 0 );
+		
 		InstructionLeapController.StopRecording();
 		InstructionLeapController.recordingAsset = InstructionRecording;
 		InstructionLeapController.PlayRecording();
