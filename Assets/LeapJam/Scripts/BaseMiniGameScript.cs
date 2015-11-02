@@ -9,6 +9,7 @@ public class BaseMiniGameScript : MonoBehaviour
 	public MainLogicScript MainLogic;
 	// Reference to the Leap Motion Controller object
 	public HandController LeapController;
+	public HandController InstructionLeapController;
 
 	// The time for which the game lasts
 	public float MaxPreGameTime = 1;
@@ -17,6 +18,8 @@ public class BaseMiniGameScript : MonoBehaviour
 	// The instructions to display
 	public string Instructions;
 	public string Instructions2;
+	// The instruction recording file to play (if any)
+	public TextAsset InstructionRecording;
 	// The score to award on completion
 	public int Score;
 
@@ -92,6 +95,11 @@ public class BaseMiniGameScript : MonoBehaviour
 	protected void ResetGameTime()
 	{
 		GameTime = 0;
+
+		if ( GameStarted && ( !GameEnded ) )
+		{
+			PlayInstruction();
+		}
 	}
 
 	protected void SetBasicInstructions( string text, float time )
@@ -129,5 +137,15 @@ public class BaseMiniGameScript : MonoBehaviour
 	public bool GetWaitingHands()
 	{
 		return NewGameWaitingHands;
+	}
+
+	public void PlayInstruction()
+	{
+		if ( !InstructionRecording ) return;
+
+		InstructionLeapController.transform.position = new Vector3( 0, 0, 0 );
+		InstructionLeapController.StopRecording();
+		InstructionLeapController.recordingAsset = InstructionRecording;
+		InstructionLeapController.PlayRecording();
 	}
 }

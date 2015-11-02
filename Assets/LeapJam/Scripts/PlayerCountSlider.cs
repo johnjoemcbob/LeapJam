@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerCountSlider : SliderDemo
 {
 	public MainLogicScript MainLogic;
+	public Text PlayerText;
 
 	protected override void Start()
 	{
@@ -25,5 +27,6 @@ public class PlayerCountSlider : SliderDemo
 				}
 			}
 		MainLogic.SetPlayers( dot + 1 );
+		PlayerText.text = string.Format( "PLAYERS: {0}", dot + 1 );
 	}
 }

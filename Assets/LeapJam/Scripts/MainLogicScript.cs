@@ -16,6 +16,7 @@ public class MainLogicScript : MonoBehaviour
 	public GameObject MainCamera;
 	// Reference to the Leap Motion Controller object
 	public HandController LeapController;
+	public HandController InstructionLeapController;
 	// The colours to use on the Image_Time UI element to display time running out
 	public Color[] TimeColours;
 	// The value (from 0->1) when this colour will first appear (starting at 1 with element 0)
@@ -366,6 +367,7 @@ public class MainLogicScript : MonoBehaviour
 		CurrentGameLogic = (BaseMiniGameScript) minigame.GetComponentInChildren<BaseMiniGameScript>();
 		CurrentGameLogic.MainLogic = this;
 		CurrentGameLogic.LeapController = LeapController;
+		CurrentGameLogic.InstructionLeapController = InstructionLeapController;
 
 		// Flag the minigame as loaded
 		CurrentGameID = gameid;

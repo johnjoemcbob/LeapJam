@@ -125,16 +125,16 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 					GestureProgressionThumb[currenthand] = 0;
 				}
 			}
-			else
+			else if ( GestureProgressionThumb[currenthand] == 0 )
 			{
-				if ( GestureProgressionThumb[currenthand] == 0 )
+				if ( NextFireTime[currenthand] <= Time.time )
 				{
 					GestureProgressionThumb[currenthand] = 1;
 				}
-				else
-				{
-					GestureProgressionThumb[currenthand] = -1;
-				}
+			}
+			else
+			{
+				GestureProgressionThumb[currenthand] = -1;
 			}
 
 			// Check for gun firing (hand recoil gesture) (GestureProgression=1)
@@ -148,9 +148,7 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 					)
 				)
 				{
-					GestureProgression[currenthand] = 1;
-					NextFireTime[currenthand] = Time.time + BulletReloadTime;
-					AudioReloadTime[currenthand] = Time.time + 0.5f;
+					//GestureProgression[currenthand] = 1;
 				}
 			}
 
@@ -179,6 +177,10 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				// Flag as not firing again
 				GestureProgression[currenthand] = -1;
 				GestureProgressionThumb[currenthand] = -1;
+
+				// Timers for next firing
+				NextFireTime[currenthand] = Time.time + BulletReloadTime;
+				AudioReloadTime[currenthand] = Time.time + 0.5f;
 			}
 
 			// Update last palm normal for this hand
