@@ -51,8 +51,8 @@ public class PlayButtonScript : ButtonToggleBase
 
 	public override void ButtonTurnsOn()
 	{
-		PressDelay = Time.time + 1;
-		ButtonText.text = "Cancel?\n...";
+		PressDelay = Time.time + 0;//1;
+		//ButtonText.text = "Cancel?\n...";
 	}
 
 	public override void ButtonTurnsOff()

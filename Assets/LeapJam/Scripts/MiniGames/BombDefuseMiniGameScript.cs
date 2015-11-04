@@ -19,6 +19,8 @@ public class BombDefuseMiniGameScript : BaseMiniGameScript
 
 	void Start()
 	{
+		base.Start();
+
 		// Choose a random wire
 		WireToCut = UnityEngine.Random.Range( 0, WireName.Length );
 

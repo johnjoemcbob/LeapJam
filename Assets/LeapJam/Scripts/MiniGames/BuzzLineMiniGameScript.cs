@@ -16,6 +16,8 @@ public class BuzzLineMiniGameScript : BaseMiniGameScript
 
 	void Start()
 	{
+		base.Start();
+
 		SetBasicInstructions( Instructions, 0 );
 	}
 

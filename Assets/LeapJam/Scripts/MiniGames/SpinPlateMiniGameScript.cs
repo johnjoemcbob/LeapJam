@@ -9,6 +9,8 @@ public class SpinPlateMiniGameScript : BalanceMiniGameScript
 
 	void Start()
 	{
+		base.Start();
+
 		SetBasicInstructions( Instructions, 0 );
 
 		// Give the spinning plates the initial rotational velocity

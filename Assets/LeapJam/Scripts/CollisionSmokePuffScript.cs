@@ -5,7 +5,7 @@ public class CollisionSmokePuffScript : MonoBehaviour
 {
 	public GameObject ParticlePrefab;
 	public GameObject ParticleHolderObject;
-	public float BetweenParticleFire = 2;
+	public float TimeBetweenParticleFire = 0.2f;
 
 	private float NextParticleFire = 0;
 
@@ -21,7 +21,7 @@ public class CollisionSmokePuffScript : MonoBehaviour
 			particle.transform.position = contact.point;
 			particle.transform.SetParent( ParticleHolderObject.transform );
 
-			NextParticleFire = Time.time + BetweenParticleFire;
+			NextParticleFire = Time.time + TimeBetweenParticleFire;
 			break;
 		}
 	}

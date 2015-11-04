@@ -38,6 +38,11 @@ public class BaseMiniGameScript : MonoBehaviour
 	// String to display when the minigame is won
 	protected string WinMessage = "";
 
+	public void Start()
+	{
+		PlayInstruction();
+	}
+
 	void Update()
 	{
 		// Must have a reference, or functionality will be unavailable
@@ -51,8 +56,12 @@ public class BaseMiniGameScript : MonoBehaviour
 		// Actual game end logic is checked within individual minigames,
 		// to allow for some to work around the time limit if need be
 		GameTime += Time.deltaTime;
-		// In multiplayer the start timer needs to pause to allow for player repositioning
-		if ( ( !GameStarted ) && ( MainLogic.GetMaxPlayers() > 1 ) && NewGameWaitingHands )
+		// In multiplayer the start timer needs to pause to allow for player repositioning OR
+		// While instructions are being displayed
+		if (
+			( ( !GameStarted ) && ( MainLogic.GetMaxPlayers() > 1 ) && NewGameWaitingHands ) ||
+			( ( !GameStarted ) && ( !GetInstructionFinished() ) )
+		)
 		{
 			GameTime -= Time.deltaTime;
 
@@ -95,11 +104,6 @@ public class BaseMiniGameScript : MonoBehaviour
 	protected void ResetGameTime()
 	{
 		GameTime = 0;
-
-		if ( GameStarted && ( !GameEnded ) )
-		{
-			PlayInstruction();
-		}
 	}
 
 	protected void SetBasicInstructions( string text, float time )
@@ -142,9 +146,25 @@ public class BaseMiniGameScript : MonoBehaviour
 	public void PlayInstruction()
 	{
 		if ( !InstructionRecording ) return;
-		
+
 		InstructionLeapController.StopRecording();
-		InstructionLeapController.recordingAsset = InstructionRecording;
+		InstructionLeapController.GetLeapRecorder().Load( InstructionRecording );
 		InstructionLeapController.PlayRecording();
+	}
+
+	// Return true when there are no instructions or they have played completely
+	public bool GetInstructionFinished()
+	{
+		if (
+			//( !GameStarted ) &&
+			(
+				( !InstructionRecording ) ||
+				( InstructionLeapController.GetRecordingProgress() > 0.8f )
+			)
+		)
+		{
+			return true;
+		}
+		return true;//false;
 	}
 }

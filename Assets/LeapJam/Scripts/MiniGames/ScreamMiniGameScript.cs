@@ -12,6 +12,8 @@ public class ScreamMiniGameScript : BaseMiniGameScript
 
 	void Start()
 	{
+		base.Start();
+
 		SetBasicInstructions( Instructions, 0 );
 		//SetBasicInstructions( Instructions + "\nBeginning in: {0}", MaxPreGameTime );
 	}

@@ -11,6 +11,8 @@ public class JugglingMiniGameScript : BaseMiniGameScript
 
 	void Start()
 	{
+		base.Start();
+
 		SetBasicInstructions( Instructions, 0 );
 	}
 

@@ -25,11 +25,14 @@ public class MainLogicScript : MonoBehaviour
 	public HandModel[] Hands;
 	// The name of each character
 	public string[] CharacterName;
-	// UI References
-	[Header( "UI" )]
+	// State References
+	[Header( "State" )]
 	public GameObject Menu;
 	public GameObject Play;
 	public GameObject Win;
+	public GameObject WinPrefab;
+	// UI References
+	[Header( "UI" )]
 	public Image Image_Background_Fade;
 	public Image Image_Time;
 	public Image Image_Timeout;
@@ -41,6 +44,10 @@ public class MainLogicScript : MonoBehaviour
 	[Header( "Audio" )]
 	public AudioClip[] Audio_Win;
 	public AudioClip[] Audio_Lose;
+	// Leap Motion Recording References
+	[Header( "Recording" )]
+	public TextAsset Recording_Win;
+	public TextAsset Recording_Lose;
 
 	// The id in the MiniGames array of the currently playing minigame
 	private int CurrentGameID = -1;
@@ -130,7 +137,7 @@ public class MainLogicScript : MonoBehaviour
 			CurrentTimeout = Mathf.Max( CurrentTimeout, 0 );
 			if ( CurrentTimeout == 0 )
 			{
-				Menu.SetActive( true );
+				StartMenu();
 				EndPlay();
 			}
 		}
@@ -140,7 +147,7 @@ public class MainLogicScript : MonoBehaviour
 			CurrentTimeout += Time.deltaTime;
 			CurrentTimeout = Mathf.Min( CurrentTimeout, 1 );
 		}
-		// Affect UI
+		// Fill circular progress for returning to menu
 		float fill = 1 - CurrentTimeout;
 		Image_Timeout.fillAmount = fill;
 		if ( fill > 0 )
@@ -167,8 +174,18 @@ public class MainLogicScript : MonoBehaviour
 		if ( !CurrentGameLogic ) return;
 
 		// Character text
-		// Don't fade if waiting for hands to appear in hotseat multiplayer
-		if ( ( Menu.activeSelf ) || CurrentGameLogic.GetGameStarted() || ( GetMaxPlayers() == 1 ) || ( !CurrentGameLogic.GetWaitingHands() ) || ( CharacterTextFadeDirection == 1 ) )
+		// Don't fade if waiting for hands to appear in hotseat multiplayer OR
+		// If the instructions are still displaying
+		if (
+			CurrentGameLogic.GetInstructionFinished() &&
+			(
+				( Menu.activeSelf ) ||
+				CurrentGameLogic.GetGameStarted() ||
+				( GetMaxPlayers() == 1 ) ||
+				( !CurrentGameLogic.GetWaitingHands() ) ||
+				( CharacterTextFadeDirection == 1 )
+			)
+		)
 		{
 			CharacterTextFade += Time.deltaTime * CharacterTextFadeDirection;
 			if ( CharacterTextFade < 0 )
@@ -197,13 +214,14 @@ public class MainLogicScript : MonoBehaviour
 	// Called from the ResetButtonScript on the main menu
 	public void Reset()
 	{
-		CurrentPlayer = -1;
-		CurrentGameID = -1;
-		LastGameID = -1;
-		MaxGameID = -1;
+		CurrentPlayer = 0;
+		CurrentGameID = 0;
+		LastGameID = 0;
+		MaxGameID = 0;
 		for ( int player = 0; player < 4; player++ )
 		{
 			Score[player] = 0;
+			Text_Score[player].text = "0";
 		}
 		CurrentGameLogic = null;
 	}
@@ -211,7 +229,7 @@ public class MainLogicScript : MonoBehaviour
 	// Called from the Update_CheckTimeout function
 	public void EndPlay()
 	{
-		SetPlayers( 0 );
+		//SetPlayers( 0 );
 		SetBackgroundAlpha( 0 );
 		SetTime( 0 );
 		ExitGame( CurrentGameID );
@@ -254,10 +272,16 @@ public class MainLogicScript : MonoBehaviour
 			Score[CurrentPlayer] += CurrentGameLogic.Score;
 			ScoreShake[CurrentPlayer] = 5;
 			Text_Score[CurrentPlayer].text = Score[CurrentPlayer].ToString();
-			CompletedGame[CurrentPlayer] = true;
+
 			// Play cheer/clap effect
 			GetComponent<AudioSource>().clip = Audio_Win[UnityEngine.Random.Range( 0, Audio_Win.Length )];
 			GetComponent<AudioSource>().Play();
+
+			// All players before this one have run out of attempts
+			for ( int player = 0; player < CurrentPlayer + 1; player++ )
+			{
+				CompletedGame[player] = true;
+			}
 
 			// If the player did win and this is a more difficult game, then store as the hardest completed
 			MaxGameID = Mathf.Max( CurrentGameID, MaxGameID );
@@ -314,6 +338,7 @@ public class MainLogicScript : MonoBehaviour
 				if ( MaxGameID >= MiniGames.Length )
 				{
 					WinGame();
+					return;
 				}
 			}
 		}
@@ -417,7 +442,8 @@ public class MainLogicScript : MonoBehaviour
 		var scores_sorted = from entry in scores orderby entry.Value descending select entry;
 
 		// Display the win state
-		Win.SetActive( true );
+		//Win.SetActive( true );
+		Win = (GameObject) Instantiate( WinPrefab );
 
 		// Change the number of hands depending on the number of players (2-3)
 		for ( int player = 0; player < 4; player++ )
@@ -430,7 +456,7 @@ public class MainLogicScript : MonoBehaviour
 		for ( int position = 0; position < 4; position++ )
 		{
 			// Win -> PedestalNum -> AnimationParent -> HandController
-			HandController controller = (HandController) Win.transform.GetChild( position ).GetChild( 0 ).GetChild( 0 ).GetComponent<HandController>();
+			HandController controller = GetWinHandController( position );
 
 			int hand = scores_sorted.ElementAt( position ).Key * 2;
 			controller.leftGraphicsModel = Hands[hand];
@@ -450,8 +476,36 @@ public class MainLogicScript : MonoBehaviour
 		Text_Character.color = new Color( 0, 0, 0, 0 );
 
 		// Stop the game state (last because it resets values)
-		EndPlay();
 		Reset();
+		EndPlay();
+	}
+
+	// Called using the timeout gesture to return to the main menu
+	private void StartMenu()
+	{
+		// Change states
+		Menu.SetActive( true );
+		if ( Win )
+		{
+			Destroy( Win );
+			Win = null;
+		}
+
+		// Set the title back to the game name
+		Text_Instruction.text = "-- LEAP --\n-- CARNIVAL --";
+
+		// Stop winning recordings
+		for ( int position = 0; position < 4; position++ )
+		{
+			HandController controller = GetWinHandController( position );
+			controller.ResetRecording();
+			controller.enableRecordPlayback = false;
+		}
+	}
+
+	private HandController GetWinHandController( int position )
+	{
+		return (HandController) Win.transform.GetChild( position ).GetChild( 0 ).GetChild( 0 ).GetComponent<HandController>();
 	}
 
 	// Set the number of players in the current game
