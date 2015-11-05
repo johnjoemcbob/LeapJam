@@ -48,6 +48,7 @@ public class MainLogicScript : MonoBehaviour
 	[Header( "Recording" )]
 	public TextAsset Recording_Win;
 	public TextAsset Recording_Lose;
+	public TextAsset Recording_Timeout;
 
 	// The id in the MiniGames array of the currently playing minigame
 	private int CurrentGameID = -1;
@@ -214,7 +215,7 @@ public class MainLogicScript : MonoBehaviour
 	// Called from the ResetButtonScript on the main menu
 	public void Reset()
 	{
-		CurrentPlayer = 0;
+		CurrentPlayer = -1;
 		CurrentGameID = 0;
 		LastGameID = 0;
 		MaxGameID = 0;
@@ -475,6 +476,9 @@ public class MainLogicScript : MonoBehaviour
 		Text_Instruction.text = CharacterName[scores_sorted.ElementAt( 0 ).Key] + " WON!";
 		Text_Character.color = new Color( 0, 0, 0, 0 );
 
+		// Set the instruction hands to display the tutorial for timeout (Return to Menu) gesture
+		InstructionLeapController.GetLeapRecorder().Load( Recording_Timeout );
+
 		// Stop the game state (last because it resets values)
 		Reset();
 		EndPlay();
@@ -493,14 +497,6 @@ public class MainLogicScript : MonoBehaviour
 
 		// Set the title back to the game name
 		Text_Instruction.text = "-- LEAP --\n-- CARNIVAL --";
-
-		// Stop winning recordings
-		for ( int position = 0; position < 4; position++ )
-		{
-			HandController controller = GetWinHandController( position );
-			controller.ResetRecording();
-			controller.enableRecordPlayback = false;
-		}
 	}
 
 	private HandController GetWinHandController( int position )

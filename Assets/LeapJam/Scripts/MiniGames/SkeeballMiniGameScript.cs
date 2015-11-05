@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class SkeeballMiniGameScript : BaseMiniGameScript
@@ -6,6 +7,8 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 	[Header( "Skeeball" )]
 	// The ball prefab to spawn
 	public GameObject SkeeballPrefab;
+	// The UI for this minigame, display of the number of remaining balls
+	public Text Text_Ball;
 	// The maximum balls for this game
 	public int MaxBalls = 1;
 	// The multiplier applied to each score segment
@@ -14,13 +17,14 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 	// The number of balls which have been thrown during this instance of the game
 	private int BallsThrown = 0;
 	// After throwing, wait for the velocity of the hand to be small again before allowing another ball spawn
-	private bool CanThrow = true;
+	private bool[] CanThrow = { true, true };
 
 	void Start()
 	{
 		base.Start();
 
 		SetBasicInstructions( Instructions, 0 );
+		UpdateBallUI();
 	}
 
 	protected override void Update_PreGame()
@@ -54,28 +58,31 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 		}
 
 		// Check for hand velocity to initiate throwing
-		if ( BallsThrown < MaxBalls )
+		HandModel[] hands = LeapController.GetAllPhysicsHands();
+		int currenthand = 0;
+		foreach ( HandModel hand in hands )
 		{
-			HandModel[] hands = LeapController.GetAllPhysicsHands();
-			foreach ( HandModel hand in hands )
+			if ( BallsThrown < MaxBalls )
 			{
 				Vector3 velocity = new Vector3( hand.GetLeapHand().PalmVelocity.x, hand.GetLeapHand().PalmVelocity.y, -hand.GetLeapHand().PalmVelocity.z );
 				if ( velocity.z > 100 )
 				{
-					if ( CanThrow )
+					if ( CanThrow[currenthand] )
 					{
 						GameObject thrownball = (GameObject) Instantiate( SkeeballPrefab );
 						thrownball.transform.SetParent( transform );
 						thrownball.transform.position = hand.GetPalmPosition();
 						thrownball.GetComponent<Rigidbody>().AddForce( velocity.normalized * 7.5f );
 						BallsThrown++;
-						CanThrow = false;
+						UpdateBallUI();
+						CanThrow[currenthand] = false;
 					}
 				}
 				else if ( velocity.z < 10 )
 				{
-					CanThrow = true;
+					CanThrow[currenthand] = true;
 				}
+				currenthand++;
 			}
 		}
 
@@ -92,6 +99,11 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 		{
 			MainLogic.EndCurrentGame();
 		}
+	}
+
+	private void UpdateBallUI()
+	{
+		Text_Ball.text = string.Format( "BALLS REMAINING: {0}", MaxBalls - BallsThrown );
 	}
 
 	public void AddScore( int score )
