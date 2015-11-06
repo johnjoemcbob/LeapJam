@@ -27,6 +27,7 @@ public class TargetExplodeScript : MonoBehaviour
 	public void Explode()
 	{
 		Explosion.transform.localPosition = Target.transform.localPosition;
+		Explosion.transform.localEulerAngles = new Vector3( Random.Range( 0, 360 ), 0, 0 );
 		Explosion.SetActive( true );
 		SoundTime = Time.time + 0.1f;
 	}

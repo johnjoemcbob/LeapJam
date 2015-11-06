@@ -11,7 +11,7 @@ public class CollisionSkeeballRampScript : MonoBehaviour
 			( other.GetComponent<Rigidbody>().velocity.z > 0 )
 		)
 		{
-			other.GetComponent<Rigidbody>().AddForce( new Vector3( 0, 5, 2 ) );
+			other.GetComponent<Rigidbody>().AddForce( new Vector3( 0, 10, 4 ) );
 		}
 	}
 }

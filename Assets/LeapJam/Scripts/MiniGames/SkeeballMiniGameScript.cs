@@ -18,6 +18,9 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 	private int BallsThrown = 0;
 	// After throwing, wait for the velocity of the hand to be small again before allowing another ball spawn
 	private bool[] CanThrow = { true, true };
+	// The average of movement while the hand is moving quickly
+	private Vector3[] AverageDirection = { new Vector3(), new Vector3() };
+	private int[] AverageDirectionCount = { 0, 0 };
 
 	void Start()
 	{
@@ -65,22 +68,43 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 			if ( BallsThrown < MaxBalls )
 			{
 				Vector3 velocity = new Vector3( hand.GetLeapHand().PalmVelocity.x, hand.GetLeapHand().PalmVelocity.y, -hand.GetLeapHand().PalmVelocity.z );
-				if ( velocity.z > 100 )
+				if ( velocity.z > 200 )
 				{
 					if ( CanThrow[currenthand] )
 					{
+						// Calculate direction to fire in
+						velocity.Normalize();
+						if ( AverageDirectionCount[currenthand] == 0 )
+						{
+							AverageDirection[currenthand] = velocity.normalized;
+							AverageDirectionCount[currenthand]++;
+						}
+						AverageDirection[currenthand] /= AverageDirectionCount[currenthand];
+						Vector3 direction = new Vector3( AverageDirection[currenthand].x, 0.3f, Mathf.Max( AverageDirection[currenthand].z, 0.25f ) );
+						print( direction );
+						AverageDirection[currenthand] = new Vector3( 0, 0, 0 );
+						AverageDirectionCount[currenthand] = 0;
+
+						// Create and launch ball
 						GameObject thrownball = (GameObject) Instantiate( SkeeballPrefab );
-						thrownball.transform.SetParent( transform );
-						thrownball.transform.position = hand.GetPalmPosition();
-						thrownball.GetComponent<Rigidbody>().AddForce( velocity.normalized * 7.5f );
+							thrownball.transform.SetParent( transform );
+							thrownball.transform.position = hand.GetPalmPosition();
+							thrownball.GetComponent<Rigidbody>().AddForce( direction * 12.5f );
+
 						BallsThrown++;
 						UpdateBallUI();
 						CanThrow[currenthand] = false;
 					}
 				}
+				else if ( velocity.z > 100 )
+				{
+					AverageDirection[currenthand] += velocity.normalized;
+					AverageDirectionCount[currenthand]++;
+				}
 				else if ( velocity.z < 10 )
 				{
 					CanThrow[currenthand] = true;
+					AverageDirection[currenthand] = new Vector3( 0, 0, 0 );
 				}
 				currenthand++;
 			}
