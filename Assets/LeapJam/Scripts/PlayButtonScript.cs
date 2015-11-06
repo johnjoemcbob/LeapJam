@@ -12,10 +12,20 @@ public class PlayButtonScript : ButtonToggleBase
 
 	// The delay after pressing after which the state will be changed to play
 	private float PressDelay = -1;
+	// Stop presses being registered by mistake on creation
+	static private float TimeBeforePress = 0.4f;
+	private float TimeCreated = 0;
 
 	protected override void Start()
 	{
 		base.Start();
+
+		TimeCreated = Time.time;
+	}
+
+	void OnEnable()
+	{
+		TimeCreated = Time.time;
 	}
 
 	protected override void FixedUpdate()
@@ -44,15 +54,19 @@ public class PlayButtonScript : ButtonToggleBase
 				PressDelay = -1;
 				ButtonText.text = "PLAY";
 				MainLogic.StartPlay();
-				m_toggleState = false;
 			}
 		}
 	}
 
 	public override void ButtonTurnsOn()
 	{
+		m_toggleState = false;
+		if ( ( TimeCreated + TimeBeforePress ) > Time.time ) return;
+
 		PressDelay = Time.time + 0;//1;
 		//ButtonText.text = "Cancel?\n...";
+
+		TimeCreated = Time.time;
 	}
 
 	public override void ButtonTurnsOff()
