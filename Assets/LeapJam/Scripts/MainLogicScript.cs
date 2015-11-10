@@ -76,6 +76,10 @@ public class MainLogicScript : MonoBehaviour
 	private float CharacterTextFadeDirection = 0;
 	// Flag for whether or not this is the final attempt on this minigame
 	private bool FinalAttempt = false;
+	// The current fade alpha value for the instruction image
+	private float InstructionAlpha = 0;
+	// The current fade alpha direction for the instruction image
+	private float InstructionAlphaDirection = 0;
 
 	void Update()
 	{
@@ -88,6 +92,17 @@ public class MainLogicScript : MonoBehaviour
 		Update_CheckTimeout();
 		Update_ScoreShake();
 		Update_CharacterText();
+
+		// Start instruction fade when the recording ends
+		if ( ( InstructionAlphaDirection == 1 ) && ( InstructionLeapController.GetRecordingProgress() > 0.8f ) )
+		{
+			// Reset the instruction fade out time
+			InstructionAlpha = 1;
+			InstructionAlphaDirection = -1;
+		}
+		// Instruction fading using Color.Lerp
+		InstructionAlpha += Time.deltaTime * InstructionAlphaDirection;
+		Image_Instruction.color = Color.Lerp( new Color( 255, 255, 255, 0 ), Color.white, InstructionAlpha );
 	}
 
 	// Check for the 'timeout' return to main menu gesture
@@ -259,13 +274,18 @@ public class MainLogicScript : MonoBehaviour
 	public void SetBackgroundAlpha( float alpha )
 	{
 		Image_Background_Fade.color = new Color( 0, 0, 0, alpha );
-		Image_Instruction.color = new Color( 255, 255, 255, alpha );
 		MainCamera.transform.localPosition = new Vector3( 0, 0, 1 - alpha - 1 );
 	}
 
 	// Callback from the minigame script to run win/lose logic
 	public void RunWinLose( bool win )
 	{
+		// Extra logic to stop bug (when all had completed game except last player, first player could play again)
+		if ( FinalAttempt )
+		{
+			CompletedGame[CurrentPlayer] = true;
+		}
+
 		// Run win logic
 		if ( win )
 		{
@@ -365,6 +385,10 @@ public class MainLogicScript : MonoBehaviour
 			CharacterTextFadeDirection = 1;
 			Text_Character.text = CharacterName[CurrentPlayer] + "\n(PLACE BOTH HANDS IN THE SCENE)\n" + character_linetwo;
 		}
+
+		// Reset the instruction fade in time
+		InstructionAlpha = 0;
+		InstructionAlphaDirection = 1;
 
 		// Choose from a selection of minigames near the current level
 		//int mingame = Mathf.Max( 0, MaxGameID - 5 );
@@ -475,6 +499,10 @@ public class MainLogicScript : MonoBehaviour
 		// Change instructions to display the winner's name
 		Text_Instruction.text = CharacterName[scores_sorted.ElementAt( 0 ).Key] + " WON!";
 		Text_Character.color = new Color( 0, 0, 0, 0 );
+
+		// Reset the instruction fade in time
+		InstructionAlpha = 0;
+		InstructionAlphaDirection = 1;
 
 		// Set the instruction hands to display the tutorial for timeout (Return to Menu) gesture
 		InstructionLeapController.GetLeapRecorder().Load( Recording_Timeout );

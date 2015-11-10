@@ -116,10 +116,16 @@ public class TargetPracticeMiniGameScript : BaseMiniGameScript
 				GestureProgression[currenthand] = -1;
 			}
 			// Check that the thumb is extended like a hammer
-			Vector3 thumbtip = hand.fingers[0].bones[2].position;
-			Vector3 indextip = hand.fingers[1].bones[3].position;
-			float thumbdistance = Vector3.Distance( thumbtip, indextip );
-			if ( thumbdistance > 1 )
+			//Vector3 thumbtip = hand.fingers[0].bones[2].position;
+			//Vector3 indextip = hand.fingers[1].bones[3].position;
+			//float thumbdistance = Vector3.Distance( thumbtip, indextip );
+			//if ( thumbdistance > 1 )
+			//{
+			float dot = Vector3.Dot(
+				hand.fingers[0].bones[hand.fingers[0].bones.Length-1].transform.forward,
+				hand.fingers[1].bones[hand.fingers[0].bones.Length-1].transform.forward
+			);
+			if ( dot < 0.75f )
 			{
 				// The hand must also be gun shaped to proceed
 				if ( GestureProgression[currenthand] == 0 )

@@ -5,7 +5,7 @@ public class CollisionSmokePuffScript : MonoBehaviour
 {
 	public GameObject ParticlePrefab;
 	public GameObject ParticleHolderObject;
-	public float TimeBetweenParticleFire = 0.2f;
+	public float TimeBetweenParticleFire = 0.5f;
 
 	private float NextParticleFire = 0;
 

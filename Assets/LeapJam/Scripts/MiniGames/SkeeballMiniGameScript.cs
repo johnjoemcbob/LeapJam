@@ -21,6 +21,8 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 	// The average of movement while the hand is moving quickly
 	private Vector3[] AverageDirection = { new Vector3(), new Vector3() };
 	private int[] AverageDirectionCount = { 0, 0 };
+	// The ball objects which have been thrown into the scene, used to detect if the game is over
+	private ArrayList Balls = new ArrayList();
 
 	void Start()
 	{
@@ -80,8 +82,11 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 							AverageDirectionCount[currenthand]++;
 						}
 						AverageDirection[currenthand] /= AverageDirectionCount[currenthand];
-						Vector3 direction = new Vector3( AverageDirection[currenthand].x, 0.3f, Mathf.Max( AverageDirection[currenthand].z, 0.25f ) );
-						print( direction );
+						Vector3 direction = new Vector3(
+							Mathf.Clamp( AverageDirection[currenthand].x, -0.5f, 0.5f ),
+							Mathf.Clamp( AverageDirection[currenthand].y, 0.2f, 0.9f ),
+							Mathf.Clamp( AverageDirection[currenthand].z, 0.2f, 0.9f ) * 2
+						);
 						AverageDirection[currenthand] = new Vector3( 0, 0, 0 );
 						AverageDirectionCount[currenthand] = 0;
 
@@ -90,6 +95,7 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 							thrownball.transform.SetParent( transform );
 							thrownball.transform.position = hand.GetPalmPosition();
 							thrownball.GetComponent<Rigidbody>().AddForce( direction * 12.5f );
+						Balls.Add( thrownball );
 
 						BallsThrown++;
 						UpdateBallUI();
@@ -110,8 +116,36 @@ public class SkeeballMiniGameScript : BaseMiniGameScript
 			}
 		}
 
-		// Check the unique game end conditions
-		
+		// Check the unique game end conditions (When all balls have been thrown and reached a target
+		if ( BallsThrown == MaxBalls )
+		{
+			bool end = true;
+				foreach ( GameObject ball in Balls )
+				{
+					// If it still exists, is still moving & is moving in the general direction of the goals
+					if ( ball )
+					{
+						Rigidbody body = ball.GetComponent<Rigidbody>();
+						if (
+							( body.velocity.magnitude > 0.05f ) && // Is moving
+							( ! ( ( body.transform.position.z < 7 ) && ( body.velocity.z < 0 ) ) ) && // Not moving backwards down the lane
+							( body.transform.position.y > 0 ) // Above board
+						)
+						{
+							end = false;
+							break;
+						}
+					}
+				}
+			if ( end )
+			{
+				WinMessage = "Yes!";
+				GameWon = true;
+				GameEnded = true;
+				MainLogic.RunWinLose( GameWon );
+				return;
+			}
+		}
 	}
 
 	protected override void Update_PostGame()
